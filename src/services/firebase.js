@@ -63,9 +63,9 @@ export async function updateLoggedInUserFollowing(
     .collection('users')
     .doc(loggedInUserDocId)
     .update({
-      following: isFollowingProfile ?
-        FieldValue.arrayRemove(profileId) :
-        FieldValue.arrayUnion(profileId)
+      following: isFollowingProfile
+        ? FieldValue.arrayRemove(profileId)
+        : FieldValue.arrayUnion(profileId)
     });
 }
 
@@ -79,9 +79,9 @@ export async function updateFollowedUserFollowers(
     .collection('users')
     .doc(profileDocId)
     .update({
-      followers: isFollowingProfile ?
-        FieldValue.arrayRemove(loggedInUserDocId) :
-        FieldValue.arrayUnion(loggedInUserDocId)
+      followers: isFollowingProfile
+        ? FieldValue.arrayRemove(loggedInUserDocId)
+        : FieldValue.arrayUnion(loggedInUserDocId)
     });
 }
 

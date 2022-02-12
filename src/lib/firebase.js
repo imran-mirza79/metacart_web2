@@ -1,6 +1,8 @@
 import Firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
+// eslint-disable-next-line import/named
+// import { seedDatabase } from '../seed.js';
 
 const config = {
   apiKey: 'AIzaSyAP8bG9lT2h7mot3u-pWoatCiBJ1yCGuAg',
@@ -15,4 +17,5 @@ const config = {
 const firebase = Firebase.initializeApp(config);
 const { FieldValue } = Firebase.firestore;
 
+// seedDatabase(firebase);
 export { firebase, FieldValue };
