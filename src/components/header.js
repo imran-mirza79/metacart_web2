@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { BsFillPatchPlusFill } from 'react-icons/bs';
 import FirebaseContext from '../context/firebase';
@@ -6,8 +6,10 @@ import UserContext from '../context/user';
 import * as ROUTES from '../constants/routes';
 import { DEFAULT_IMAGE_PATH } from '../constants/paths';
 import useUser from '../hooks/use-user';
+import CreatePost from './post/createPost';
 
 export default function Header() {
+  const [openModal, setOpenModal] = useState(false);
   const { user: loggedInUser } = useContext(UserContext);
   const { user } = useUser(loggedInUser?.uid);
   const { firebase } = useContext(FirebaseContext);
@@ -36,13 +38,15 @@ export default function Header() {
                     />
                   </svg>
                 </Link>
-                <Link to={ROUTES.DASHBOARD} aria-label="">
-                  <BsFillPatchPlusFill
-                    className="w-8 mr-6 text-black-light cursor-pointer"
-                    size="10x"
-                  />
-                </Link>
 
+                <BsFillPatchPlusFill
+                  className="w-8 mr-6 text-black-light cursor-pointer"
+                  size={70}
+                  onClick={() => {
+                    setOpenModal(true);
+                  }}
+                />
+                {openModal && <CreatePost setShowModal={setOpenModal} showModal={openModal} />}
                 <button
                   type="button"
                   title="Sign Out"
