@@ -1,19 +1,37 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/button-has-type */
 import React, { useState } from 'react';
-import firebase from 'firebase';
+import { storage } from '../../lib/firebase';
+// import { getStorage, ref, uploadBytes } from 'firebase/storage';
 // import LoggedInUserContext from '../../context/logged-in-user';
 
 export default function CreatePost({ setShowModal, showModal }) {
   const [image, setImage] = useState('');
-  const upload = () => {
-    if (image == null) return;
-    firebase
-      .storage()
-      .ref(`/images/${image.name}`)
-      .put(image)
-      .on('state_changed', alert('success'), alert);
+  const [url, setUrl] = useState('');
+  const [progress, setProgress] = useState(0);
+  const handleUpload = () => {
+    const uploadTask = storage.ref(`images/${image.name}`).put(image);
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        setProgress(progress);
+      },
+      (error) => {
+        console.log(error);
+      },
+      () => {
+        storage
+          .ref('images')
+          .child(image.name)
+          .getDownloadURL()
+          .then((url) => {
+            setUrl(url);
+          });
+      }
+    );
   };
+
   return (
     <>
       {showModal ? (
@@ -46,6 +64,7 @@ export default function CreatePost({ setShowModal, showModal }) {
                   <button
                     className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                     type="button"
+                    onClick={handleUpload}
                   >
                     Upload
                   </button>
@@ -74,7 +93,7 @@ export default function CreatePost({ setShowModal, showModal }) {
                   <button
                     className="bg-emerald-500 text-black active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                     type="button"
-                    onClick={() => upload()}
+                    onClick={handleUpload}
                   >
                     Post
                   </button>

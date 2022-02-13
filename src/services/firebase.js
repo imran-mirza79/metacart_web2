@@ -129,7 +129,7 @@ export async function getUserPhotosByUserId(userId) {
   return photos;
 }
 
-export async function postUserPhotos(post) {
+export async function postUserPhotos(userId, post) {
   await firebase
     .firestore()
     .collection('photos')
