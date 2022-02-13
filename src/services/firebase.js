@@ -129,6 +129,20 @@ export async function getUserPhotosByUserId(userId) {
   return photos;
 }
 
+export async function postUserPhotos(post) {
+  await firebase
+    .firestore()
+    .collection('photos')
+    .set(post)
+    .then(() => {
+      console.log('Document successfully written!');
+    })
+    .catch((error) => {
+      console.error('Error writing document: ', error);
+    });
+  // collections('users').set({photos[i]: doc.id})
+}
+
 export async function isUserFollowingProfile(loggedInUserUsername, profileUserId) {
   const result = await firebase
     .firestore()

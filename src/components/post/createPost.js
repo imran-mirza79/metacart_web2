@@ -1,8 +1,19 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/button-has-type */
-import React from 'react';
+import React, { useState } from 'react';
+import firebase from 'firebase';
+// import LoggedInUserContext from '../../context/logged-in-user';
 
 export default function CreatePost({ setShowModal, showModal }) {
+  const [image, setImage] = useState('');
+  const upload = () => {
+    if (image == null) return;
+    firebase
+      .storage()
+      .ref(`/images/${image.name}`)
+      .put(image)
+      .on('state_changed', alert('success'), alert);
+  };
   return (
     <>
       {showModal ? (
@@ -25,13 +36,31 @@ export default function CreatePost({ setShowModal, showModal }) {
                 </div>
                 {/* body */}
                 <div className="relative p-6 flex-auto">
-                  <p className="my-4 text-blueGray-500 text-lg leading-relaxed">
-                    loremElit sint labore ipsum dolor laborum excepteur amet occaecat. Sint in sit
-                    labore nostrud labore. Reprehenderit culpa commodo consequat eiusmod cupidatat.
-                    Magna et amet deserunt fugiat ut veniam adipisicing non eu incididunt. Magna ad
-                    occaecat magna incididunt nostrud. Magna irure nisi amet dolor incididunt anim
-                    tempor in exercitation dolore in exercitation sit.
-                  </p>
+                  <input
+                    aria-label="Enter your email address"
+                    type="file"
+                    onChange={(e) => {
+                      setImage(e.target.files[0]);
+                    }}
+                  />
+                  <button
+                    className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    type="button"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    aria-label="Enter your email address"
+                    type="text"
+                    placeholder="Enter Caption"
+                    className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
+                  />
+                  <input
+                    aria-label="Enter your email address"
+                    type="text"
+                    placeholder="Enter base value"
+                    className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
+                  />
                 </div>
                 {/* footer */}
                 <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
@@ -43,11 +72,11 @@ export default function CreatePost({ setShowModal, showModal }) {
                     Close
                   </button>
                   <button
-                    className="bg-emerald-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    className="bg-emerald-500 text-black active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={() => upload()}
                   >
-                    Save Changes
+                    Post
                   </button>
                 </div>
               </div>

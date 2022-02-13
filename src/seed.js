@@ -9,6 +9,7 @@ export function seedDatabase(firebase) {
       emailAddress: 'imranmirza@gmail.com',
       following: ['2'],
       followers: ['2', '3', '4'],
+      posts: [],
       dateCreated: Date.now()
     },
     {
@@ -18,6 +19,7 @@ export function seedDatabase(firebase) {
       emailAddress: 'raphael@sanzio.com',
       following: [],
       followers: ['wVomd0Dsr0WqLzLkuIBT78g6jza2'],
+      posts: [],
       dateCreated: Date.now()
     },
     {
@@ -27,6 +29,7 @@ export function seedDatabase(firebase) {
       emailAddress: 'salvador@dali.com',
       following: [],
       followers: ['wVomd0Dsr0WqLzLkuIBT78g6jza2'],
+      posts: [],
       dateCreated: Date.now()
     },
     {
@@ -36,6 +39,7 @@ export function seedDatabase(firebase) {
       emailAddress: 'george@orwell.com',
       following: [],
       followers: ['wVomd0Dsr0WqLzLkuIBT78g6jza2'],
+      posts: [],
       dateCreated: Date.now()
     }
   ];
@@ -49,7 +53,7 @@ export function seedDatabase(firebase) {
       .firestore()
       .collection('photos')
       .add({
-        photoId: i,
+        postId: i,
         userId: '2',
         imageSrc: `/images/users/raphael/${i}.jpg`,
         caption: 'Saint George and the Dragon',
