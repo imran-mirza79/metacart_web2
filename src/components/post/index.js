@@ -9,7 +9,6 @@ import Footer from './footer';
 export default function Post({ content }) {
   const commentInput = useRef(null);
   const handleFocus = () => commentInput.current.focus();
-
   // components
   // -> header, image, actions (like & comment icons), footer, comments
   return (
@@ -22,6 +21,7 @@ export default function Post({ content }) {
         likedPhoto={content.userLikedPhoto}
         handleFocus={handleFocus}
         basePrice={content.basePrice}
+        price={content.price}
       />
       <Footer caption={content.caption} username={content.username} />
     </div>
@@ -37,6 +37,7 @@ Post.propTypes = {
     userLikedPhoto: PropTypes.bool.isRequired,
     likes: PropTypes.array.isRequired,
     dateCreated: PropTypes.number.isRequired,
-    basePrice: PropTypes.number.isRequired
+    basePrice: PropTypes.number.isRequired,
+    price: PropTypes.number.isRequired
   })
 };

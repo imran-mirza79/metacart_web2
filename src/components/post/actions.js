@@ -3,30 +3,33 @@ import PropTypes from 'prop-types';
 import FirebaseContext from '../../context/firebase';
 import UserContext from '../../context/user';
 
-export default function Actions({ docId, totalLikes, likedPhoto, handleFocus, basePrice }) {
+export default function Actions({ docId, totalLikes, likedPhoto, handleFocus, basePrice, price }) {
   const {
     user: { uid: userId }
   } = useContext(UserContext);
   const [toggleLiked, setToggleLiked] = useState(likedPhoto);
   const [likes, setLikes] = useState(totalLikes);
-  const [price, setPrice] = useState(basePrice);
+  const [currprice, setcurrprice] = useState(price);
   const { firebase, FieldValue } = useContext(FirebaseContext);
 
   const handleToggleLiked = async () => {
     setToggleLiked((toggleLiked) => !toggleLiked);
 
+    setLikes((likes) => (toggleLiked ? likes - 1 : likes + 1));
+    setcurrprice((currprice) => (toggleLiked ? basePrice : basePrice + likes * (1 / 10000)));
+    console.log(currprice);
     await firebase
       .firestore()
       .collection('photos')
       .doc(docId)
       .update({
-        likes: toggleLiked ? FieldValue.arrayRemove(userId) : FieldValue.arrayUnion(userId)
+        likes: toggleLiked ? FieldValue.arrayRemove(userId) : FieldValue.arrayUnion(userId),
+        price: toggleLiked ? basePrice : basePrice + likes * (1 / 10000)
       });
-
-    setLikes((likes) => (toggleLiked ? likes - 1 : likes + 1));
-    setPrice(basePrice + likes * (1 / 10000));
+    console.log(price);
     // Pass the price to another function or Component which displays the button.
     // Add price to firestore
+    // await firebase.firestore.collection('photos').update({ F });
   };
 
   return (
@@ -57,7 +60,7 @@ export default function Actions({ docId, totalLikes, likedPhoto, handleFocus, ba
             />
           </svg>
           {/* price details */}
-          {<p className="font-bold">Price: ${price}</p>}
+          {<p className="font-bold">Price: ${currprice}</p>}
         </div>
       </div>
       <div className="p-4 py-0">
@@ -72,5 +75,6 @@ Actions.propTypes = {
   totalLikes: PropTypes.number.isRequired,
   likedPhoto: PropTypes.bool.isRequired,
   handleFocus: PropTypes.func.isRequired,
-  basePrice: PropTypes.number.isRequired
+  basePrice: PropTypes.number.isRequired,
+  price: PropTypes.number.isRequired
 };

@@ -1,37 +1,83 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/button-has-type */
-import React, { useState } from 'react';
-import { storage } from '../../lib/firebase';
-// import { getStorage, ref, uploadBytes } from 'firebase/storage';
-// import LoggedInUserContext from '../../context/logged-in-user';
+import React, { useState, useContext } from 'react';
+import { create } from 'ipfs-http-client';
+import firebase from 'firebase/app';
+import useUser from '../../hooks/use-user';
+import UserContext from '../../context/user';
+// import { postUserPhotos } from '../../services/firebase';
+
+const client = create('https://ipfs.infura.io:5001/api/v0');
 
 export default function CreatePost({ setShowModal, showModal }) {
-  const [image, setImage] = useState('');
-  const [url, setUrl] = useState('');
-  const [progress, setProgress] = useState(0);
-  const handleUpload = () => {
-    const uploadTask = storage.ref(`images/${image.name}`).put(image);
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setProgress(progress);
-      },
-      (error) => {
-        console.log(error);
-      },
-      () => {
-        storage
-          .ref('images')
-          .child(image.name)
-          .getDownloadURL()
-          .then((url) => {
-            setUrl(url);
-          });
-      }
-    );
+  const [file, setFile] = useState(null);
+  const [urlArr, setUrlArr] = useState('');
+  const [hash, sethash] = useState('');
+  const [caption, setcaption] = useState('');
+  // const [ likes, setlikes ] = useState([]);
+  const { user: loggedInUser } = useContext(UserContext);
+  const { user } = useUser(loggedInUser?.uid);
+  const [basePrice, setbasePrice] = useState(0);
+
+  const onchangeCaption = (e) => {
+    setcaption(e.target.value);
+  };
+  const onchange = (e) => {
+    setbasePrice(e.target.value);
+  };
+  const retrieveFile = (e) => {
+    const data = e.target.files[0];
+    const reader = new window.FileReader();
+    reader.readAsArrayBuffer(data);
+
+    reader.onloadend = () => {
+      setFile(Buffer.from(reader.result));
+    };
+
+    e.preventDefault();
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    let url = '';
+
+    try {
+      const created = await client.add(file);
+      url = `https://ipfs.io/ipfs/${created.path}`;
+      sethash(created.path);
+      setUrlArr((prev) => [...prev, url]);
+    } catch (error) {
+      console.log();
+    }
+    const result = await firebase
+      .firestore()
+      .collection('photos')
+      .add({
+        userId: user.userId,
+        imageSrc: url,
+        price: 1,
+        basePrice,
+        dateCreated: new Date(Date.now()).toUTCString(),
+        caption,
+        likes: []
+      })
+      .then(async (docRef) => {
+        await firebase.firestore().collection('photos').doc(docRef.id).update({
+          // call
+          photoId: docRef.id
+        });
+        await firebase
+          .firestore()
+          .collection('users')
+          .doc(user.docId)
+          .update({
+            photos: firebase.firestore.FieldValue.arrayUnion(docRef.id)
+          });
+      })
+      .catch((error) => {
+        console.error('Error writing document: ', error);
+      });
+  };
   return (
     <>
       {showModal ? (
@@ -54,32 +100,30 @@ export default function CreatePost({ setShowModal, showModal }) {
                 </div>
                 {/* body */}
                 <div className="relative p-6 flex-auto">
-                  <input
-                    aria-label="Enter your email address"
-                    type="file"
-                    onChange={(e) => {
-                      setImage(e.target.files[0]);
-                    }}
-                  />
-                  <button
-                    className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                    type="button"
-                    onClick={handleUpload}
-                  >
-                    Upload
-                  </button>
-                  <input
-                    aria-label="Enter your email address"
-                    type="text"
-                    placeholder="Enter Caption"
-                    className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
-                  />
-                  <input
-                    aria-label="Enter your email address"
-                    type="text"
-                    placeholder="Enter base value"
-                    className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
-                  />
+                  <form onSubmit={handleSubmit}>
+                    <input
+                      aria-label="Enter your image"
+                      type="file"
+                      placeholder=""
+                      onChange={retrieveFile}
+                    />
+                    <button>Upload</button>
+                    <input
+                      aria-label="Enter your caption"
+                      type="text"
+                      placeholder="Enter Caption"
+                      className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
+                      onChange={onchangeCaption}
+                    />
+                    <input
+                      aria-label="Enter your base value"
+                      type="text"
+                      required
+                      placeholder="Enter base value"
+                      className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
+                      onChange={onchange}
+                    />
+                  </form>
                 </div>
                 {/* footer */}
                 <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
@@ -91,9 +135,12 @@ export default function CreatePost({ setShowModal, showModal }) {
                     Close
                   </button>
                   <button
-                    className="bg-emerald-500 text-black active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                     type="button"
-                    onClick={handleUpload}
+                    onClick={() => {
+                      // onchange();
+                      setShowModal(false);
+                    }}
                   >
                     Post
                   </button>

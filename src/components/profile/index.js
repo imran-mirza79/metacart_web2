@@ -40,7 +40,7 @@ export default function Profile({ user }) {
 
 Profile.propTypes = {
   user: PropTypes.shape({
-    dateCreated: PropTypes.number,
+    dateCreated: PropTypes.string,
     emailAddress: PropTypes.string,
     followers: PropTypes.array,
     following: PropTypes.array,
